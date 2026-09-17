@@ -2,6 +2,11 @@ import express, { type Request, type Response } from "express";
 
 // import middlewares
 import morgan from "morgan";
+import errorHandler from "./middlewares/invalidJsonMiddleware.ts";
+import notFoundMiddleware from "./middlewares/notFoundMiddleware.ts";
+import { authenticateToken } from "./middlewares/authenMiddleware.ts";
+import usersRoutes from "./routes/usersRoutes.ts";
+import itemsRoutes from "./routes/itemsRoutes.ts";
 
 const app = express();
 const port = 3000;
@@ -12,6 +17,7 @@ app.use(express.json());
 // logger middleware
 app.use(morgan("dev"));
 // app.use(morgan("combined"));
+app.use(errorHandler);
 
 // Endpoints
 app.get("/", (req: Request, res: Response) => {
@@ -24,6 +30,24 @@ app.get("/me", (req: Request, res: Response) => {
     message: "Quiz #2 - API service",
   });
 });
+
+app.get("/student", (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: "Student Information",
+    data: {
+      "studentId": "680610670",
+      "firstName": "Nattakit",
+      "lastName": "Haikham",
+      "section": "001"
+    }
+  });
+});
+
+app.use("/api/v670/auth", usersRoutes);
+app.use("/api/v670/cart", authenticateToken, itemsRoutes);
+
+app.use(notFoundMiddleware);
 
 app.listen(port, () => {
   console.log(`🚀 Server running on http://localhost:${port}`);
